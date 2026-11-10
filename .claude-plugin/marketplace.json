@@ -1,0 +1,11 @@
+{
+  "name": "stop-yap",
+  "owner": { "name": "joezhuo2" },
+  "plugins": [
+    {
+      "name": "stop-yap",
+      "source": "./",
+      "description": "Keeps every reply to one sentence per point. Toggle with /stop-yap."
+    }
+  ]
+}
