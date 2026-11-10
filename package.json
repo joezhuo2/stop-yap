@@ -1,6 +1,6 @@
 {
   "name": "stop-yap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Claude Code plugin that keeps every reply to one sentence per point. Toggle with /stop-yap.",
   "license": "MIT",
   "repository": "github:joezhuo2/stop-yap",

@@ -1,6 +1,6 @@
 {
   "name": "stop-yap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Keeps every reply to one sentence per point, in plain words, with no recap of work that matches the request. Toggle with /stop-yap.",
   "author": { "name": "joezhuo2" },
   "repository": "https://github.com/joezhuo2/stop-yap",
