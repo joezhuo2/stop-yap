@@ -154,12 +154,13 @@ back.
 ### Releasing
 
 Bump the version in `package.json` and `.claude-plugin/plugin.json`, then
-publish and tag:
+publish and tag. Pushing a `v*` tag runs `npm test` in GitHub Actions and
+creates the GitHub release when it passes.
 
 ```bash
 npm publish
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 ## Contributing
