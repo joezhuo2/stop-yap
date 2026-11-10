@@ -1,0 +1,25 @@
+{
+  "name": "stop-yap",
+  "version": "0.1.0",
+  "description": "Claude Code plugin that keeps every reply to one sentence per point. Toggle with /stop-yap.",
+  "license": "MIT",
+  "repository": "github:joezhuo2/stop-yap",
+  "bin": {
+    "stop-yap": "bin/install.js"
+  },
+  "files": [
+    "bin",
+    "hooks",
+    "commands",
+    ".claude-plugin"
+  ],
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "claude-plugin",
+    "skill"
+  ]
+}
