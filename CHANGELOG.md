@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.3] - 2026-11-10
+
+### Changed
+
+- Claude no longer pastes back code it just wrote or edited; it names the file instead.
+- A one-line reminder is added every 6th prompt, so the rules hold in long sessions.
+
+### Fixed
+
+- Resuming a session no longer resends the full rules.
+
+### Added
+
+- Multi-turn session benchmark (`bench/session.js`) with results in the README.
+
 ## [0.1.2] - 2026-11-10
 
 ### Changed

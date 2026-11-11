@@ -238,8 +238,8 @@ creates the GitHub release when it passes.
 
 ```bash
 npm publish
-git tag v0.1.2
-git push origin v0.1.2
+git tag v0.1.3
+git push origin v0.1.3
 ```
 
 ## Contributing
