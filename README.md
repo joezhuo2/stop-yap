@@ -107,10 +107,19 @@ Delete `~/.claude/.stop-yap-off` too if you had turned stop-yap off.
   A toggle in one session reaches the others on their next prompt.
 - **On by default:** stop-yap is on right after install.
 
+### Config
+
+- **`/stop-yap config <lines> <words>`:** sets the most lines in a final reply
+  and the most words per line. Defaults are 4 lines and 15 words.
+- **`/stop-yap config`:** shows the current values.
+- Saved in `.stop-yap.json` next to the flag file. The current session gets
+  the new limits at once; other sessions get them at their next start.
+
 ## Usage
 
 ```
 /stop-yap
+/stop-yap config 6 20
 ```
 
 The plugin registers the command as `/stop-yap:stop-yap`. Typing `/stop-yap`
@@ -238,8 +247,8 @@ creates the GitHub release when it passes.
 
 ```bash
 npm publish
-git tag v0.1.3
-git push origin v0.1.3
+git tag v0.1.4
+git push origin v0.1.4
 ```
 
 ## Contributing
