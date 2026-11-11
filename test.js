@@ -36,6 +36,13 @@ for (let i = 1; i < 6; i++) assert.strictEqual(hook('UserPromptSubmit'), '', `si
 assert.match(hook('UserPromptSubmit'), /STOP-YAP still on/, 'reminder on prompt 6');
 assert.strictEqual(hook('UserPromptSubmit'), '', 'silent after reminder');
 
+assert.match(run('toggle', 'config'), /4 lines, 15 words/, 'config shows defaults');
+assert.match(run('toggle', 'config', '6', '20'), /at most 6 lines.*20 words max/, 'config sets limits');
+assert.match(run(), /at most 6 lines.*20 words max/, 'config persists');
+assert.match(run('toggle', 'config', '0', 'x'), /Usage/, 'config rejects bad values');
+assert.match(run('toggle', 'config', '3'), /Usage/, 'config needs both values');
+assert.match(run(), /STOP-YAP ON/, 'config does not toggle');
+
 fs.rmSync(path.join(os.tmpdir(), `stop-yap-${sid}`), { force: true });
 fs.rmSync(dir, { recursive: true });
 console.log('ok');
