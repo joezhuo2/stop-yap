@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.2] - 2026-11-10
+
+### Changed
+
+- Stop-yap rules are shorter and allow the cause of a fix in a few words.
+- Rules are injected once per session (and after compact/clear); later prompts only report on/off changes.
+
+### Added
+
+- Token and quality benchmark (`bench/run.js`) with results in the README.
+
 ## [0.1.1] - 2026-11-10
 
 ### Changed
