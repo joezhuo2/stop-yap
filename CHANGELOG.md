@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.4] - 2026-11-11
+
+### Added
+
+- `/stop-yap config <lines> <words>` sets the reply line limit and words per line (defaults 4 and 15); `/stop-yap config` shows them.
+
 ## [0.1.3] - 2026-11-10
 
 ### Changed
