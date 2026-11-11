@@ -13,6 +13,7 @@
   <a href="#install">Install</a> •
   <a href="#features">Features</a> •
   <a href="#usage">Usage</a> •
+  <a href="#benchmarks">Benchmarks</a> •
   <a href="#files">Files</a> •
   <a href="#development">Development</a> •
   <a href="#contributing">Contributing</a> •
@@ -23,6 +24,9 @@
 > Every step, summary point and status message is one sentence at most, in
 > plain words, and Claude no longer retells work that matches what you asked
 > for. Toggle it with `/stop-yap`; the setting is saved for every session.
+>
+> In [benchmarks](#benchmarks) it made final replies 69% shorter and cut
+> output tokens 39%, at the same cost per run and with no failed tasks.
 
 ## Install
 
@@ -86,8 +90,8 @@ Delete `~/.claude/.stop-yap-off` too if you had turned stop-yap off.
   and it expands only that section.
 - **Plain words:** no filler, preamble, hedging, praise or closing recap.
 - **No retelling:** when the work is exactly what you asked for, Claude does
-  not describe it. You only hear what differed from your request, one
-  sentence per difference.
+  not describe it. You hear the result, the cause in a few words when
+  something was fixed, and anything not done or not verified.
 - **Exact where it matters:** code, commands, file paths and quoted errors are
   left alone.
 - **Safety stays:** warnings and confirmations before destructive actions are
@@ -115,6 +119,49 @@ finds it, and Claude Code shows the full name in the menu.
 To get more detail on one thing while stop-yap is on, ask for it: "expand on
 step 2" or "explain the last point in full".
 
+## Benchmarks
+
+Eight tasks (bug fix, feature, rename, regex question, git command, code
+review, a fix that cannot be tested, an impossible deploy), each run once per
+model with stop-yap off and on: 32 headless `claude -p` runs. Each run has
+user settings and other plugins disabled, so the only difference is the
+stop-yap hooks. Every run is scored two ways: an automatic check (tests pass,
+or the reply contains the key fact) and a blind Sonnet judge that rates
+information completeness from 1 to 5, ignoring length.
+
+| Model | stop-yap | Task pass | Judge (1–5) | Reply words | Output tokens | Cost / run |
+| --- | --- | --- | --- | --- | --- | --- |
+| Opus 5.5 | off | 8/8 | 5.0 | 126 | 580 | $0.100 |
+| Opus 5.5 | on | 8/8 | 4.9 | 38 | 361 | $0.101 |
+| Sonnet 5.5 | off | 8/8 | 5.0 | 96 | 498 | $0.049 |
+| Sonnet 5.5 | on | 8/8 | 5.0 | 31 | 300 | $0.048 |
+| **Both** | off | 16/16 | 5.0 | 111 | 539 | $0.075 |
+| **Both** | on | 16/16 | 4.9 | 34 | 330 | $0.075 |
+
+- **Shorter replies:** final replies are 69% shorter and output tokens drop
+  39%, with no lost task successes.
+- **Same cost per run:** the rules cost a few hundred input tokens once per
+  session, which roughly cancels the saved output on one-prompt tasks. Longer
+  sessions should come out ahead, since the rules are not repeated per prompt;
+  that was not measured.
+- **Quality held:** 15 of 16 replies got a full judge score. The one miss was
+  a deploy refusal that asked for details without listing every option.
+
+An earlier version (0.1.1) re-sent longer rules on every prompt and banned
+explaining causes; it cost 6% more per run and scored 4.5. Those numbers are
+in `bench/results/2026-11-11T03-40-40.json`.
+
+Run on 2026-11-10 with Claude Code 2.1.316; one run per cell, so treat the
+numbers as directional. Raw results are in `bench/results/`. To rerun:
+
+```bash
+node bench/run.js                                    # all tasks, Opus + Sonnet
+BENCH_MODELS=sonnet BENCH_RUNS=3 node bench/run.js   # more runs, one model
+node bench/run.js fix-bug,review                     # a subset of tasks
+```
+
+Each full run costs about $4 and needs stop-yap toggled on.
+
 ## Files
 
 | What | Path |
@@ -133,8 +180,10 @@ If `CLAUDE_CONFIG_DIR` is set, the flag lives there instead of `~/.claude`.
 ### How it works
 
 A `SessionStart` hook and a `UserPromptSubmit` hook both run
-`hooks/stop-yap.js`. While stop-yap is on, the script prints the rules into
-Claude's context; while it is off, it prints nothing. `/stop-yap` runs the
+`hooks/stop-yap.js`. At session start (and after a compact or clear) it
+prints the rules into Claude's context if stop-yap is on. On later prompts it
+prints nothing unless the state changed since this session last saw it, which
+it tracks with a small per-session file in the system temp folder. `/stop-yap` runs the
 same script with `toggle`, which creates or removes the flag file and prints
 the new state.
 
