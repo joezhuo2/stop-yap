@@ -162,6 +162,35 @@ node bench/run.js fix-bug,review                     # a subset of tasks
 
 Each full run costs about $4 and needs stop-yap toggled on.
 
+### Long sessions
+
+One 12-prompt session per model and setting on a small todo project: fix a
+bug, add features, rename, review, explain, add persistence, run tests. After
+each reply, a simulated developer (Sonnet) sends a follow-up question if
+something they needed was missing; follow-ups are counted and paid for.
+
+| Model | stop-yap | Tests pass | Session cost | Output tokens | Follow-ups | Words, prompts 1–6 / 7–12 | Code blocks pasted |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Opus 5.5 | off | yes | $5.19 | 15,497 | 0 | 147 / 340 | 5 |
+| Opus 5.5 | on | yes | $3.29 | 7,042 | 0 | 40 / 76 | 0 |
+| Sonnet 5.5 | off | yes | $1.97 | 10,728 | 0 | 81 / 240 | 0 |
+| Sonnet 5.5 | on | yes | $1.79 | 7,004 | 1 | 32 / 82 | 0 |
+
+- **Cheaper over a session:** 37% less on Opus and 9% less on Sonnet, with
+  output tokens down 55% and 35%. Shorter replies also keep the context that
+  every later prompt re-reads smaller.
+- **Follow-ups stayed rare:** one in 24 stop-yap replies, after a project
+  summary that left out the function signatures.
+- **No clear drift:** replies get longer in prompts 7–12 with stop-yap off
+  too (those prompts include a review and an explanation), and stay about a
+  third of the off length with it on.
+
+One session per cell, so treat these as directional. To rerun (about $12):
+
+```bash
+node bench/session.js
+```
+
 ## Files
 
 | What | Path |
@@ -182,8 +211,9 @@ If `CLAUDE_CONFIG_DIR` is set, the flag lives there instead of `~/.claude`.
 A `SessionStart` hook and a `UserPromptSubmit` hook both run
 `hooks/stop-yap.js`. At session start (and after a compact or clear) it
 prints the rules into Claude's context if stop-yap is on. On later prompts it
-prints nothing unless the state changed since this session last saw it, which
-it tracks with a small per-session file in the system temp folder. `/stop-yap` runs the
+prints nothing unless the state changed since this session last saw it, plus
+a one-line reminder every 6th prompt. It tracks this with a small per-session
+file in the system temp folder, so resuming a session does not resend the rules. `/stop-yap` runs the
 same script with `toggle`, which creates or removes the flag file and prints
 the new state.
 
