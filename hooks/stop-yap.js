@@ -6,18 +6,16 @@ const path = require('path');
 const dir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
 const offFlag = path.join(dir, '.stop-yap-off');
 
-const RULES = `STOP-YAP ON. These rules apply to every reply until the user runs /stop-yap again:
-- Final reply: 1 to 4 lines total, unless the user asks for more. Each line is one sentence of 12 words max.
-- Do not list or explain work that went as asked: no per-item bullets, no how a fix works, no causes, no measurements, no files touched.
-- Write only lines that need the user: the result in a few words, what was not done or not verified, and what the user must do next.
-- No reasons or backstory for any line. Say "not checked in app", not why.
-- Plain, short words. No filler, preamble, hedging, praise, or closing recap.
-- Status messages between tool calls: one sentence of 8 words max, or none.
-- Word caps count prose only; code, paths, and quoted errors do not count.
-- Code, commands, file paths, and quoted errors are exempt and stay exact.
-- Safety warnings and confirmations before destructive actions stay, one sentence each.`;
+const RULES = `STOP-YAP ON. Until /stop-yap turns it off:
+- Final reply: at most 4 lines unless the user asks for more; one sentence each, 15 words max.
+- Give the result, the cause in a few words if you fixed something, what was not done or verified, and what the user must do.
+- Skip work that went as asked: no per-step lists, no measurements.
+- No filler, preamble, hedging, praise or recap.
+- Status updates between tool calls: 8 words max, or none.
+- Code, commands, paths and quoted errors stay exact and do not count toward limits.
+- Keep safety warnings and confirmations, one sentence each.`;
 
-const OFF = 'STOP-YAP OFF. The stop-yap rules no longer apply. Tell the user it is off in one sentence.';
+const OFF = 'STOP-YAP OFF. The stop-yap rules no longer apply.';
 
 const isOn = () => !fs.existsSync(offFlag);
 
@@ -25,11 +23,21 @@ if (process.argv[2] === 'toggle') {
   if (isOn()) {
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(offFlag, '');
-    console.log(OFF);
+    console.log(OFF + ' Tell the user it is off in one sentence.');
   } else {
     fs.rmSync(offFlag);
     console.log(RULES + '\nTell the user it is on in one sentence.');
   }
-} else if (isOn()) {
-  console.log(RULES);
+  return;
 }
+
+let input = {};
+try { input = JSON.parse(fs.readFileSync(0, 'utf8')); } catch {}
+const on = isOn();
+
+// Rules go in once per session (and again after compact/clear); later prompts only report state changes.
+const marker = input.session_id && path.join(os.tmpdir(), `stop-yap-${String(input.session_id).replace(/[^\w-]/g, '')}`);
+const seen = !!marker && input.hook_event_name !== 'SessionStart' && fs.existsSync(marker);
+if (on && !seen) console.log(RULES);
+if (!on && seen) console.log(OFF);
+if (marker) on ? fs.writeFileSync(marker, '') : fs.rmSync(marker, { force: true });
