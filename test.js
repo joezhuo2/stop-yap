@@ -13,7 +13,7 @@ const exec = (args, input) =>
   });
 const run = (...args) => exec(args);
 const sid = `test-${process.pid}`;
-const hook = event => exec([], JSON.stringify({ session_id: sid, hook_event_name: event }));
+const hook = (event, source) => exec([], JSON.stringify({ session_id: sid, hook_event_name: event, source }));
 
 assert.match(run(), /STOP-YAP ON/, 'on by default');
 assert.match(run('toggle'), /STOP-YAP OFF/, 'toggle turns off');
@@ -30,7 +30,11 @@ assert.strictEqual(hook('UserPromptSubmit'), '', 'silent while off');
 run('toggle');
 assert.match(hook('UserPromptSubmit'), /STOP-YAP ON/, 'rules again after turning on');
 assert.strictEqual(hook('UserPromptSubmit'), '', 'then silent');
-assert.match(hook('SessionStart'), /STOP-YAP ON/, 'rules again after compact or clear');
+assert.match(hook('SessionStart', 'compact'), /STOP-YAP ON. Until/, 'rules again after compact or clear');
+assert.strictEqual(hook('SessionStart', 'resume'), '', 'no repeat on resume');
+for (let i = 1; i < 6; i++) assert.strictEqual(hook('UserPromptSubmit'), '', `silent on prompt ${i}`);
+assert.match(hook('UserPromptSubmit'), /STOP-YAP still on/, 'reminder on prompt 6');
+assert.strictEqual(hook('UserPromptSubmit'), '', 'silent after reminder');
 
 fs.rmSync(path.join(os.tmpdir(), `stop-yap-${sid}`), { force: true });
 fs.rmSync(dir, { recursive: true });
